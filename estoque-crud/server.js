@@ -32,9 +32,9 @@ app.get('/categorias', (req, res) => {
 
 // Rota para cadastrar um produto
 app.post('/produtos', (req, res) => {
-    const { nome, quantidade, preco, prateleira, descricao, categoria_id } = req.body;
-    const query = 'INSERT INTO produtos (nome, quantidade, preco, prateleira, descricao, categoria_id) VALUES (?, ?, ?, ?, ?, ?)';
-    db.query(query, [nome, quantidade, preco, prateleira, descricao, categoria_id], (err, result) => {
+    const { nome, quantidade, preco, marca, descricao, categoria_id } = req.body;
+    const query = 'INSERT INTO produtos (nome, quantidade, preco, marca, descricao, categoria_id) VALUES (?, ?, ?, ?, ?, ?)';
+    db.query(query, [nome, quantidade, preco, marca, descricao, categoria_id], (err, result) => {
         if (err) {
             console.error('Erro ao inserir produto:', err);
             return res.status(500).send('Erro ao inserir produto');
