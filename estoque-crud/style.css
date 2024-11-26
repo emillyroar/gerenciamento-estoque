@@ -79,7 +79,6 @@ form {
     border-radius: 8px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
-
 form input,
 form textarea,
 form select,
@@ -90,7 +89,9 @@ form button {
     border-radius: 5px;
     border: 1px solid #ddd;
     font-size: 1rem;
+    font-family: Arial, sans-serif; 
 }
+
 
 form button {
     background-color: #3498db;
