@@ -145,3 +145,20 @@ function editarCategoria(id) {
 // Chama a função para carregar categorias ao carregar a página
 document.addEventListener('DOMContentLoaded', carregarCategorias);
 
+// Função para cadastrar uma nova categoria
+function cadastrarCategoria(event) {
+    event.preventDefault();
+
+    const categoriaNome = document.getElementById('categoriaNome').value;
+
+    // Adicione a lógica para salvar a categoria no banco de dados aqui
+    // Por enquanto, apenas imprimiremos a categoria no console
+    console.log(`Cadastrando categoria: ${categoriaNome}`);
+
+    // Limpar o formulário
+    document.getElementById('categoriaForm').reset();
+}
+
+// Adicione um evento de envio ao formulário de categoria
+document.getElementById('categoriaForm').addEventListener('submit', cadastrarCategoria);
+
