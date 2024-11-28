@@ -3,14 +3,36 @@ const app = express();
 const cors = require('cors');
 const mysql = require('mysql');
 
+
+// Verificar se já existem categorias na tabela
+db.query('SELECT COUNT(*) AS count FROM categoria', (err, result) => {
+    if (err) {
+        console.error('Erro ao verificar categorias:', err);
+    } else {
+        if (result[0].count === 0) {
+            // Se não houver categorias, insira as categorias padrão
+            categoriasPadrao.forEach(categoria => {
+                db.query('INSERT INTO categoria (nome) VALUES (?)', [categoria.nome], (err, result) => {
+                    if (err) {
+                        console.error('Erro ao inserir categoria:', err);
+                    } else {
+                        console.log('Categoria inserida:', categoria.nome);
+                    }
+                });
+            });
+        }
+    }
+});
+
 app.use(cors());
 app.use(express.json());
+app.use(express.static('public')); // Serve arquivos estáticos (como script.js e imagens)
 
 const db = mysql.createConnection({
     host: 'localhost',
     user: 'root', 
     password: '',
-    database: 'estoque'
+    database: 'estoque2'
 });
 
 db.connect(err => {
@@ -18,9 +40,14 @@ db.connect(err => {
     console.log("Conectado ao banco de dados!");
 });
 
+const categoriasPadrao = [
+    { nome: 'Eletrônicos' },
+    { nome: 'Acessórios' }
+];
+
 // Rota para buscar categorias
-app.get('/categorias', (req, res) => {
-    const query = 'SELECT * FROM categorias';
+app.get('/categoria', (req, res) => {
+    const query = 'SELECT * FROM categoria';
     db.query(query, (err, results) => {
         if (err) {
             console.error('Erro ao buscar categorias:', err);
@@ -30,9 +57,9 @@ app.get('/categorias', (req, res) => {
     });
 });
 // Rota para cadastrar uma categoria
-app.post('/categorias', (req, res) => {
+app.post('/categoria', (req, res) => {
     const { nome } = req.body;
-    const query = 'INSERT INTO categorias (nome) VALUES (?)';
+    const query = 'INSERT INTO categoria (nome) VALUES (?)';
     db.query(query, [nome], (err, result) => {
         if (err) {
             console.error('Erro ao inserir categoria:', err);
@@ -43,10 +70,10 @@ app.post('/categorias', (req, res) => {
 });
 
 // Rota para atualizar uma categoria
-app.put('/categorias/:id', (req, res) => {
+app.put('/categoria/:id', (req, res) => {
     const { id } = req.params;
     const { nome } = req.body;
-    const query = 'UPDATE categorias SET nome = ? WHERE id = ?';
+    const query = 'UPDATE categoria SET nome = ? WHERE id = ?';
     db.query(query, [nome, id], (err, result) => {
         if (err) {
             console.error('Erro ao atualizar categoria:', err);
@@ -55,11 +82,14 @@ app.put('/categorias/:id', (req, res) => {
         res.send('Categoria atualizada com sucesso');
     });
 });
+        app.listen(3000, () => {
+        console.log("Servidor rodando na porta 3000");
+});
 
 // Rota para excluir uma categoria
-app.delete('/categorias/:id', (req, res) => {
+app.delete('/categoria/:id', (req, res) => {
     const { id } = req.params;
-    const query = 'DELETE FROM categorias WHERE id = ?';
+    const query = 'DELETE FROM categoria WHERE id = ?';
     db.query(query, [id], (err, result) => {
         if (err) {
             console.error('Erro ao excluir categoria:', err);
@@ -70,9 +100,9 @@ app.delete('/categorias/:id', (req, res) => {
 });
 
 // Rota para cadastrar um produto
-app.post('/produtos', (req, res) => {
+app.post('/produto', (req, res) => {
     const { nome, quantidade, preco, marca, descricao, categoria_id } = req.body;
-    const query = 'INSERT INTO produtos (nome, quantidade, preco, marca, descricao, categoria_id) VALUES (?, ?, ?, ?, ?, ?)';
+    const query = 'INSERT INTO produto (nome, quantidade, preco, marca, descricao, categoria_id) VALUES (?, ?, ?, ?, ?, ?)';
     db.query(query, [nome, quantidade, preco, marca, descricao, categoria_id], (err, result) => {
         if (err) {
             console.error('Erro ao inserir produto:', err);
@@ -82,12 +112,9 @@ app.post('/produtos', (req, res) => {
     });
 });
 
-app.listen(3000, () => {
-    console.log("Servidor rodando na porta 3000");
-});
 // Rota para listar produtos
-app.get('/produtos', (req, res) => {
-    const query = 'SELECT * FROM produtos';
+app.get('/produto', (req, res) => {
+    const query = 'SELECT * FROM produto';
     db.query(query, (err, results) => {
         if (err) {
             console.error('Erro ao buscar produtos:', err);
@@ -97,14 +124,14 @@ app.get('/produtos', (req, res) => {
     });
 });
 // Função para carregar categorias na tabela
-function carregarCategorias() {
-    fetch('http://localhost:3000/categorias')
+function carregarCategoria() {
+    fetch('http://localhost:3000/categoria')
         .then(response => response.json())
-        .then(categorias => {
-            const tableBody = document.getElementById('categoriasTableBody');
+        .then(categoria => {
+            const tableBody = document.getElementById('categoriaTableBody');
             tableBody.innerHTML = ''; // Limpa a tabela antes de adicionar as categorias
 
-            categorias.forEach(categoria => {
+            categoria.forEach(categoria => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>${categoria.id}</td>
@@ -122,37 +149,15 @@ function carregarCategorias() {
         });
 }
 
-// Função para adicionar uma nova categoria
-document.getElementById('categoriaForm').addEventListener('submit', function(event) {
-    event.preventDefault();
-
-    const nome = document.getElementById('categoriaNome').value;
-
-    fetch('http://localhost:3000/categorias', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ nome })
-    })
-    .then(response => response.text())
-    .then(data => {
-        alert(data);
-        carregarCategorias(); // Atualiza a lista de categorias
-        document.getElementById('categoriaForm').reset();
-    })
-    .catch(err => console.error('Erro ao cadastrar categoria:', err));
-});
-
 // Função para excluir uma categoria
 function excluirCategoria(id) {
-    fetch(`http://localhost:3000/categorias/${id}`, {
+    fetch(`http://localhost:3000/categoria/${id}`, {
         method: 'DELETE'
     })
     .then(response => response.text())
     .then(data => {
         alert(data);
-        carregarCategorias(); // Atualiza a lista de categorias
+        carregarCategoria(); // Atualiza a lista de categorias
     })
     .catch(err => console.error('Erro ao excluir categoria:', err));
 }
@@ -162,7 +167,7 @@ function editarCategoria(id) {
     const nome = prompt("Digite o novo nome da categoria:");
 
     if (nome) {
-        fetch(`http://localhost:3000/categorias/${id}`, {
+        fetch(`http://localhost:3000/categoria/${id}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json'
@@ -172,11 +177,21 @@ function editarCategoria(id) {
         .then(response => response.text())
         .then(data => {
             alert(data);
-            carregarCategorias(); // Atualiza a lista de categorias
+            carregarCategoria(); // Atualiza a lista de categorias
         })
         .catch(err => console.error('Erro ao editar categoria:', err));
     }
 }
 
-// Chama a função para carregar categorias ao carregar a página
-document.addEventListener('DOMContentLoaded', carregarCategorias);
+// Rota para listar categorias
+app.get('/categoria', (req, res) => {
+    const query = 'SELECT * FROM categoria';
+    db.query(query, (err, results) => {
+        if (err) {
+            console.error('Erro ao buscar categorias:', err);
+            return res.status(500).send('Erro ao buscar categorias');
+        }
+        res.json(results);
+    });
+});
+
