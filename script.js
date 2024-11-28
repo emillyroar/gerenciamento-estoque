@@ -127,6 +127,7 @@ function editarProduto(id) {
         .catch(err => console.error('Erro ao editar produto:', err));
 }
 
+<<<<<<< HEAD
 // Carregar categorias e produtos na inicialização
 window.onload = function() {
     carregarCategoria();
@@ -183,3 +184,22 @@ app.delete('/produto/:id', (req, res) => {
         res.send('Produto excluído com sucesso');
     });
 });
+=======
+// Função para cadastrar uma nova categoria
+function cadastrarCategoria(event) {
+    event.preventDefault();
+
+    const categoriaNome = document.getElementById('categoriaNome').value;
+
+    // Adicione a lógica para salvar a categoria no banco de dados aqui
+    // Por enquanto, apenas imprimiremos a categoria no console
+    console.log(`Cadastrando categoria: ${categoriaNome}`);
+
+    // Limpar o formulário
+    document.getElementById('categoriaForm').reset();
+}
+
+// Adicione um evento de envio ao formulário de categoria
+document.getElementById('categoriaForm').addEventListener('submit', cadastrarCategoria);
+
+>>>>>>> 808051e0397900546d094c9f65f88017fadf6b66
